@@ -21,17 +21,39 @@ export class SubmitService {
             });
         }
 
+        // STEP 1: Save submission + answers (status = PENDING)
+        const { submission } = await this.repository.submitExam(payload);
+
+        this.logger.log(
+            `Submission ${submission.id} saved (PENDING) for student ${submission.student_id}`,
+        );
+
         try {
-            // 1. Save submission in the database
-            const { submission, answers } = await this.repository.submitExam(payload);
+            // STEP 2: Run AI marking
+            const markingResults: MarkingResult[] =
+                await this.markingService.markSubmission(submission.id);
 
-            this.logger.log(`Submission ${submission.id} saved for student ${submission.student_id}`);
+            // STEP 3: Compute total score
+            const studentTotalScore = markingResults.reduce(
+                (sum, r) => sum + (r.awarded_marks ?? 0),
+                0,
+            );
 
-            // 2. Immediately mark the submission
-            const markingResults: MarkingResult[] = await this.markingService.markSubmission(submission.id);
+            const totalScore = markingResults.reduce(
+                (sum, r) => sum + (r.max_marks ?? 0),
+                0,
+            );
+            
+
+            // STEP 4: Mark submission as SUCCESS
+            await this.repository.markSubmissionSuccess(
+                submission.id,
+                studentTotalScore,
+                totalScore,
+            );
 
             this.logger.log(
-                `Submission ${submission.id} marked successfully for student ${submission.student_id}`,
+                `Submission ${submission.id} marked successfully (score: ${totalScore})`,
             );
 
             return {
@@ -39,17 +61,35 @@ export class SubmitService {
                 examId: submission.exam_id,
                 studentId: submission.student_id,
                 submittedAt: submission.submitted_at,
-                answers: markingResults, // now contains awarded marks, feedback, etc.
+                status: 'MARKED',
+                totalScore,
+                answers: markingResults,
             };
         } catch (error: any) {
-            // Handle duplicate submission error
-            if (error?.response?.error === 'DuplicateSubmission') {
-                throw new BadRequestException({
-                    message: 'You have already submitted this exam',
-                    error: 'DuplicateSubmission',
-                });
-            }
-            throw error; // rethrow other errors
+            // STEP 5: Mark submission as FAILED
+            const reason =
+                error?.message || 'AI marking failed unexpectedly';
+
+            await this.repository.markSubmissionFailed(
+                submission.id,
+                reason,
+            );
+
+            this.logger.error(
+                `Submission ${submission.id} marking failed`,
+                error?.stack,
+            );
+
+            return {
+                id: submission.id,
+                examId: submission.exam_id,
+                studentId: submission.student_id,
+                submittedAt: submission.submitted_at,
+                status: 'FAILED',
+                error: 'MARKING_FAILED',
+                message:
+                    'Submission saved but marking failed. It will be retried or reviewed.',
+            };
         }
     }
 }

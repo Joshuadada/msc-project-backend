@@ -1,3 +1,4 @@
+// marking.service.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { MarkingGuide } from './interfaces/marking-guild.interface';
 import { MarkingResult } from './interfaces/marking-result.interface';
@@ -12,47 +13,68 @@ export class MarkingService {
   constructor(
     private readonly repo: MarkingRepository,
     private readonly llmService: LLMMarkingService,
-  ) {}
+  ) { }
 
   async markSubmission(submissionId: string) {
-    // 1. Fetch all student answers for this submission
-    const rows = await this.repo.getSubmissionAnswers(submissionId);
+    try {
+      this.logger.log(`Starting to mark submission: ${submissionId}`);
 
-    const results: MarkingResult[] = [];
+      // 1. Fetch all student answers for this submission
+      const rows = await this.repo.getSubmissionAnswers(submissionId);
+      this.logger.log(`Found ${rows.length} answers to mark`);
 
-    for (const row of rows) {
-      const studentAnswer: StudentAnswer = {
-        id: row.id,
-        question_id: row.question_id,
-        sub_question_id: row.sub_question_id,
-        question_html: row.question_html,             // HTML from exam_sub_questions.marking_guide
-        student_answer_html: row.answer_text,         // HTML from exam_answers.answer_text
-        max_marks: row.max_marks,
-      };
+      if (!rows || rows.length === 0) {
+        this.logger.warn(`No answers found for submission ${submissionId}`);
+        return [];
+      }
 
-      const guide: MarkingGuide = {
-        id: row.id,
-        question_id: row.question_id,
-        sub_question_id: row.sub_question_id,
-        marking_scheme_html: row.marking_guide
-      };
+      const results: MarkingResult[] = [];
 
-      // 2. Send to LLM for marking
-      const markingResult = await this.llmService.markSubQuestion(studentAnswer, guide);
-      results.push(markingResult);
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        this.logger.log(`Processing answer ${i + 1}/${rows.length}: ${row.id}`);
 
-      // 3. Update score & feedback in DB
-      await this.repo.updateAnswerScore(
-        markingResult.student_answer_id,
-        markingResult.awarded_marks,
-        markingResult.feedback, // HTML
-      );
+        try {
+          const studentAnswer: StudentAnswer = {
+            id: row.id,
+            question_id: row.question_id,
+            sub_question_id: row.sub_question_id,
+            question_html: row.question_html || '',
+            student_answer_html: row.answer_text || '',
+            max_marks: row.marks,
+          };
 
-      this.logger.log(
-        `Marked answer ${studentAnswer.id}: ${markingResult.awarded_marks}/${studentAnswer.max_marks}`,
-      );
+          const guide: MarkingGuide = {
+            id: row.sub_question_db_id,
+            question_id: row.question_id,
+            sub_question_id: row.sub_question_id,
+            marking_scheme_html: row.marking_guide || '',
+          };
+
+          this.logger.debug(`Student answer: ${JSON.stringify(studentAnswer, null, 2)}`);
+          this.logger.debug(`Marking guide: ${JSON.stringify(guide, null, 2)}`);
+
+          // 2. Send to LLM for marking
+          const markingResult = await this.llmService.markSubQuestion(studentAnswer, guide);
+          await this.repo.saveMarkingResult(markingResult, submissionId);
+          results.push(markingResult);
+
+          this.logger.log(
+            `✅ Marked answer ${studentAnswer.id}: ${markingResult.awarded_marks}/${studentAnswer.max_marks}`,
+          );
+        } catch (error) {
+          this.logger.error(`❌ Error marking answer ${row.id}:`, error.message);
+          this.logger.error(error.stack);
+          // Continue with next answer
+        }
+      }
+
+      this.logger.log(`Completed marking submission ${submissionId}. Marked ${results.length}/${rows.length} answers`);
+      return results;
+    } catch (error) {
+      this.logger.error(`Fatal error marking submission ${submissionId}:`, error.message);
+      this.logger.error(error.stack);
+      throw error;
     }
-
-    return results;
   }
 }

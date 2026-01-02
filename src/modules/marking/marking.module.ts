@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { MarkingService } from './marking.service';
 import { MarkingRepository } from './marking.repository';
 import { LLMMarkingService } from './llm/llm-marking.service';
-import { AnthropicClientService } from './llm/anthropic-client.service';
 import { PromptBuilderService } from './llm/prompt-builder.service';
 import { LLMResponseParserService } from './llm/llm-response-parser.service';
 import { MarkingReviewPolicyService } from './llm/marking-review-policy.service';
@@ -15,10 +14,9 @@ import { MarkingReviewPolicyService } from './llm/marking-review-policy.service'
     MarkingService,
     MarkingRepository,
     LLMMarkingService,
-    AnthropicClientService,
     PromptBuilderService,
     LLMResponseParserService,
-    MarkingReviewPolicyService
+    MarkingReviewPolicyService,
   ],
   exports: [MarkingService, LLMMarkingService],
 })

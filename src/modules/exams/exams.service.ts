@@ -51,6 +51,22 @@ export class ExamsService {
     }));
   }
 
+  async getRecentExams() {
+    const exams = await this.examRepository.getRecentExams();
+
+    return exams.map(exam => ({
+      id: exam.id,
+      title: exam.title,
+      courseCode: exam.course_code,
+      createdBy: exam.creator_id,
+      examinerName: exam.examiner_name,
+      duration: exam.duration,
+      examDate: exam.exam_date,
+      totalMarks: exam.total_marks,
+      createdAt: exam.created_at,
+    }));
+  }
+
   async getExamById(id: string) {
     const exam = await this.examRepository.getExamById(id);
 
@@ -85,6 +101,29 @@ export class ExamsService {
 
   async getExamsByCreatorId(creatorId: string) {
     const exams = await this.examRepository.getExamsByCreatorId(creatorId);
+  
+    if (!exams || exams.length === 0) {
+      throw new NotFoundException({
+        message: 'Exam not found',
+        error: 'Not Found',
+      });
+    }
+  
+    return exams.map(exam => ({
+      id: exam.id,
+      title: exam.title,
+      courseCode: exam.course_code,
+      creatorId: exam.creator_id,
+      examinerName: exam.examiner_name,
+      duration: exam.duration,
+      examDate: exam.exam_date,
+      totalMarks: exam.total_marks,
+      createdAt: exam.created_at,
+    }));
+  }
+
+  async getRecentExamsByCreatorId(creatorId: string) {
+    const exams = await this.examRepository.getRecentExamsByCreatorId(creatorId);
   
     if (!exams || exams.length === 0) {
       throw new NotFoundException({

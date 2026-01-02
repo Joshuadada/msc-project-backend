@@ -14,6 +14,9 @@ export interface MarkingResult {
 
     confidence_score: number;
 
+    question: string,
+    studentAnswer: string,
+
     feedback: string; // HTML
     strengths: string[];
     weaknesses: string[];

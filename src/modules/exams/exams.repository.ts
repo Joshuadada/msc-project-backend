@@ -130,6 +130,29 @@ export class ExamsRepository {
         return result.rows;
     }
 
+
+    // GET RECENT EXAMS
+    async getRecentExams() {
+        const query = `
+          SELECT 
+            id,
+            title,
+            course_code,
+            creator_id,
+            examiner_name,
+            duration,
+            exam_date,
+            total_marks,
+            created_at
+          FROM exams
+          ORDER BY created_at DESC
+          LIMIT 5
+        `;
+
+        const result = await this.db.query(query);
+        return result.rows;
+    }
+
     // GET EXAM BY ID
     async getExamById(examId: string) {
         const examResult = await this.db.query(
@@ -171,7 +194,7 @@ export class ExamsRepository {
         };
     }
 
-    // GET EXAM BY CREATOR ID
+    // GET EXAMS BY CREATOR ID
     async getExamsByCreatorId(creatorId: string) {
         const result = await this.db.query(
             `
@@ -188,6 +211,31 @@ export class ExamsRepository {
           FROM exams
           WHERE creator_id = $1
           ORDER BY created_at DESC
+          `,
+            [creatorId],
+        );
+
+        return result.rows;
+    }
+
+    // GET RECENT EXAMS BY CREATOR ID
+    async getRecentExamsByCreatorId(creatorId: string) {
+        const result = await this.db.query(
+            `
+          SELECT 
+            id,
+            title,
+            course_code,
+            creator_id,
+            examiner_name,
+            duration,
+            exam_date,
+            total_marks,
+            created_at
+          FROM exams
+          WHERE creator_id = $1
+          ORDER BY created_at DESC
+          LIMIT 5
           `,
             [creatorId],
         );

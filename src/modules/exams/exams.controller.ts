@@ -46,12 +46,27 @@ export class ExamsController {
     return this.examsService.getAllExams();
   }
 
+  @Get('recent')
+  @ApiOperation({ summary: 'Get recent exams' })
+  @ApiResponse({ status: 200, description: 'List of exams' })
+  async getRecentExams() {
+    return this.examsService.getRecentExams();
+  }
+
   @Get('logged-in-lecturer')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get exams created by the logged-in lecturer' })
   @ApiResponse({ status: 200, description: 'List of exams' })
   async getMyExams(@Req() req: any) {
     return this.examsService.getExamsByCreatorId(req.user.id);
+  }
+
+  @Get('logged-in-lecturer/recent')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get recent exams created by the logged-in lecturer' })
+  @ApiResponse({ status: 200, description: 'List of exams' })
+  async getMyRecentExams(@Req() req: any) {
+    return this.examsService.getRecentExamsByCreatorId(req.user.id);
   }
 
   /* =========================
