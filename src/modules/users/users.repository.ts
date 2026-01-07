@@ -15,7 +15,7 @@ export class UsersRepository {
     const result = await this.db.query(query, [
       userData.email,
       userData.password_hash,
-      userData.full_name,
+      userData.fullName,
       userData.role,
       userData.department || null,
       userData.identity || null,
