@@ -40,7 +40,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   getProfile(@CurrentUser() user: any) {
-    return this.authService.getProfile(user.sub);
+    return this.authService.getProfile(user.id);
   }
 
   @Get('me')

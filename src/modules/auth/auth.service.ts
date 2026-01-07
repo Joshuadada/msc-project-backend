@@ -24,10 +24,10 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        full_name: user.full_name,
+        fullName: user.full_name,
         role: user.role,
         department: user.department,
-        student_id: user.student_id,
+        identity: user.identity,
       },
       access_token: this.jwtService.sign(payload),
     };
@@ -56,9 +56,10 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        full_name: user.full_name,
+        fullName: user.full_name,
         role: user.role,
         department: user.department,
+        identity: user.identity
       },
       access_token: this.jwtService.sign(payload),
     };

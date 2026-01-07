@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Req } from '@nestjs/common';
 import { SubmitService } from './submit.service';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SubmitExamDto } from './dto/submit-exam-dto';
@@ -14,6 +14,7 @@ export class SubmitController {
   @ApiResponse({ status: 201, description: 'Exam submitted successfully' })
   async createExam(
     @Body() payload: SubmitExamDto,
+    @Req() req: any
   ) {
     return this.submitService.createSubmission(payload);
   }

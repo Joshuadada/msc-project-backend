@@ -14,7 +14,7 @@ export class RegisterDto {
 
   @ApiProperty({ example: 'John Doe' })
   @IsString()
-  full_name: string;
+  fullName: string;
 
   @ApiProperty({ enum: UserRole, example: UserRole.STUDENT })
   @IsEnum(UserRole)
@@ -28,5 +28,5 @@ export class RegisterDto {
   @ApiPropertyOptional({ example: 'CS2024001' })
   @IsString()
   @IsOptional()
-  student_id?: string;
+  identity?: string;
 }

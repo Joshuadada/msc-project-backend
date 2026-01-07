@@ -7,9 +7,9 @@ export class UsersRepository {
 
   async create(userData: any) {
     const query = `
-      INSERT INTO users (email, password_hash, full_name, role, department, student_id)
+      INSERT INTO users (email, password_hash, full_name, role, department, identity)
       VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, email, full_name, role, department, student_id, created_at
+      RETURNING id, email, full_name, role, department, identity, created_at
     `;
 
     const result = await this.db.query(query, [
@@ -18,7 +18,7 @@ export class UsersRepository {
       userData.full_name,
       userData.role,
       userData.department || null,
-      userData.student_id || null,
+      userData.identity || null,
     ]);
 
     return result.rows[0];
@@ -26,7 +26,7 @@ export class UsersRepository {
 
   async findByEmail(email: string) {
     const query = `
-      SELECT id, email, password_hash, full_name, role, department, student_id, is_active
+      SELECT id, email, password_hash, full_name, role, department, identity, is_active
       FROM users
       WHERE email = $1 AND is_active = true
     `;
@@ -37,7 +37,7 @@ export class UsersRepository {
 
   async findById(id: string) {
     const query = `
-      SELECT id, email, full_name, role, department, student_id, created_at
+      SELECT id, email, full_name, role, department, identity, created_at
       FROM users
       WHERE id = $1 AND is_active = true
     `;

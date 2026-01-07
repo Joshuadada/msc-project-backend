@@ -9,6 +9,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ExamsModule } from './modules/exams/exams.module';
 import { SubmitModule } from './modules/submit/submit.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ResultModule } from './modules/result/result.module';
 import databaseConfig from './config/database.config';
 import appConfig from './config/app.config';
 
@@ -25,6 +26,7 @@ import appConfig from './config/app.config';
     ExamsModule,
     SubmitModule,
     DashboardModule,
+    ResultModule,
   ],
   providers: [
     {

@@ -32,7 +32,7 @@ export class ExamsRepository {
             examData.duration,
             totalMarks,          // total_marks should be 7th
             examData.examDate,   // exam_date should be 8th
-        ]);        
+        ]);
 
         return result.rows[0];
     }
@@ -174,7 +174,8 @@ export class ExamsRepository {
 
         for (const question of questionsResult.rows) {
             const subResult = await this.db.query(
-                `SELECT 
+                `SELECT
+                id as sub_question_id, 
                label,
                question_text,
                marks,

@@ -90,6 +90,7 @@ export class ExamsService {
       questions: exam.questions.map(q => ({
         number: q.number,
         subQuestions: q.subQuestions.map(sq => ({
+          subQuestionId: sq.sub_question_id,
           label: sq.label,
           questionText: sq.question_text,
           marks: sq.marks,
