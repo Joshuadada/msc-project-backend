@@ -25,8 +25,9 @@ export class DashboardController {
   @ApiResponse({ status: 200, description: 'Student dashboard data' })
   async getStudentDashboard(@Req() req: any) {
     const availableExamCount = await this.dashboardService.getAvailableExamCount();
-    // const studentCount = await this.dashboardService.getEnrolledStudentCount(req.user.id);
+    const attemptedExamCount = await this.dashboardService.getAttemptedExamCount(req.user.id);
+    const averageScore = await this.dashboardService.getAverageStudentScore(req.user.id);
 
-    return { availableExamCount, attemptedExamCount: 2, averageScore: "50%" }
+    return { availableExamCount, attemptedExamCount, averageScore }
   }
 }

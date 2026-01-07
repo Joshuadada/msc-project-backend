@@ -43,4 +43,29 @@ export class DashboardRepository {
 
         return Number(result.rows[0].count);
     }
+
+    async getAttemptedExamCount(studentId: string) {
+        const result = await this.db.query(
+            `
+        SELECT COUNT(*) AS count
+        FROM exam_submissions
+        WHERE student_id = $1
+        `, [studentId]
+        );
+
+        return Number(result.rows[0].count);
+    }
+
+    async getAverageStudentScore(studentId: string) {
+        const result = await this.db.query(
+            `
+        SELECT total_score, student_total_score
+        FROM exam_submissions
+        WHERE student_id = $1
+        `,
+            [studentId]
+        );
+
+        return result.rows;
+    }
 }
